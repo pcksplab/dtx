@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกผล QC DTX - พยาบาล</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0ea5e9',
+                        secondary: '#64748b',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS (UMD build for local file compatibility) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Font Google (Sarabun) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-slate-800 to-cyan-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-cyan-600 p-2 rounded-xl text-white shadow-md">
+                    <i class="fa-solid fa-file-medical-waveform text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
+                        DTX QC Portal
+                    </h1>
+                    <p class="text-[11px] text-cyan-200">ระบบบันทึกและควบคุมคุณภาพเครื่องวิเคราะห์น้ำตาล</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <span class="px-3 py-1.5 bg-cyan-600 text-white rounded-lg text-xs font-bold shadow-inner">
+                    <i class="fa-solid fa-user-nurse mr-1"></i> พยาบาล (บันทึกผล)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 space-y-6">
+
+                <!-- Machine Selection (Searchable) -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+                    <h2 class="text-sm font-bold text-slate-700 flex items-center">
+                        <i class="fa-solid fa-microscope text-cyan-600 mr-2 text-base"></i>
+                        เลือกเครื่องวิเคราะห์
+                    </h2>
+                    <div class="relative" id="nurse-machine-search-container">
+                        <div onclick="toggleNurseMachineDropdown()" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs cursor-pointer flex items-center justify-between gap-2 hover:border-cyan-400 transition-colors">
+                            <span id="nurse-machine-display" class="text-slate-500">-- เลือกเครื่องวิเคราะห์ --</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" id="nurse-machine-arrow"></i>
+                        </div>
+                        <div id="nurse-machine-dropdown" class="hidden absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            <div class="p-2 border-b border-slate-100">
+                                <input type="text" id="nurse-machine-search" placeholder="ค้นหาเครื่อง..." oninput="filterNurseMachineDropdown()" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-cyan-400">
+                            </div>
+                            <div id="nurse-machine-options" class="py-1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QC Entry Form -->
+                <div id="qc-entry-form-wrapper" class="hidden">
+                    <form id="qc-form" onsubmit="saveQCResult(event)" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                            <h3 class="text-sm font-bold text-slate-800" id="form-title-machine">
+                                บันทึกผล QC คุมเครื่อง
+                            </h3>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-medium" id="entry-form-date"></span>
+                        </div>
+
+                        <div class="bg-blue-50/40 p-3.5 rounded-xl border border-blue-100 space-y-2">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-blue-800">Level 1 - Low</span>
+                                <span class="text-[11px] text-slate-400 font-medium" id="form-lot-low-label">Lot: -</span>
+                            </div>
+                            <input type="number" step="any" id="qc-input-low" required placeholder="กรอกผลตรวจวัด" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <div class="bg-emerald-50/40 p-3.5 rounded-xl border border-emerald-100 space-y-2">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-emerald-800">Level 2 - Normal</span>
+                                <span class="text-[11px] text-slate-400 font-medium" id="form-lot-norm-label">Lot: -</span>
+                            </div>
+                            <input type="number" step="any" id="qc-input-norm" required placeholder="กรอกผลตรวจวัด" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+
+                        <div class="bg-rose-50/40 p-3.5 rounded-xl border border-rose-100 space-y-2">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-rose-800">Level 3 - High</span>
+                                <span class="text-[11px] text-slate-400 font-medium" id="form-lot-high-label">Lot: -</span>
+                            </div>
+                            <input type="number" step="any" id="qc-input-high" required placeholder="กรอกผลตรวจวัด" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-500 mb-1">ผู้บันทึกข้อมูล</label>
+                                <input type="text" id="qc-operator" placeholder="ชื่อพยาบาล / วอร์ด" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-cyan-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-500 mb-1">วันที่ตรวจวัด</label>
+                                <input type="date" id="qc-date" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-cyan-500 outline-none">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-cyan-700 hover:bg-cyan-800 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>บันทึกผล QC ส่งห้องแล็บ</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Placeholder -->
+                <div id="qc-entry-placeholder" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center py-12 flex flex-col items-center">
+                    <i class="fa-solid fa-microscope text-4xl text-slate-200 mb-2 animate-bounce"></i>
+                    <p class="text-xs font-bold text-slate-500">รอการเลือกเครื่องวิเคราะห์</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5 max-w-[200px]">โปรดเลือกเครื่องวิเคราะห์ด้านบน เพื่อดึงแบบฟอร์มบันทึกข้อมูล</p>
+                </div>
+            </div>
+
+            <!-- ฝั่งขวาสำหรับ Lab Reports (ซ่อนใน Nurse) -->
+            <div class="lg:col-span-2 hidden"></div>
+        </div>
+    </main>
+
+    <!-- Nurse Result Modal -->
+    <div id="nurse-result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 animate-[fadeIn_0.2s_ease-out] space-y-4">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mx-auto mb-2 text-xl shadow-inner">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">บันทึกข้อมูลสำเร็จเรียบร้อย!</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5" id="modal-machine-name">เครื่องมือ: DTX-01</p>
+            </div>
+            <div class="border-y border-slate-100 py-3 space-y-2">
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">สรุปสถานะการตรวจวัดทางสถิติ (3 Levels):</p>
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs" id="modal-row-low">
+                    <span class="font-semibold text-slate-600">Level 1 (Low):</span>
+                    <span id="modal-status-low" class="font-bold">-</span>
+                </div>
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs" id="modal-row-norm">
+                    <span class="font-semibold text-slate-600">Level 2 (Normal):</span>
+                    <span id="modal-status-norm" class="font-bold">-</span>
+                </div>
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs" id="modal-row-high">
+                    <span class="font-semibold text-slate-600">Level 3 (High):</span>
+                    <span id="modal-status-high" class="font-bold">-</span>
+                </div>
+            </div>
+            <div class="bg-amber-50 p-2.5 border border-amber-100 rounded-xl flex items-start space-x-2 text-[11px] text-amber-800">
+                <i class="fa-solid fa-circle-nodes text-amber-500 mt-0.5"></i>
+                <p class="leading-relaxed">ข้อมูลดิบและระบบสถิตินี้ถูกส่งเข้าสู่ระบบจัดการกลางเรียบร้อยแล้ว หากพบสถานะนอกขอบเขตเกณฑ์ควบคุม (Out of control / Reject) กรุณาประสานงานแจ้งห้องปฏิบัติการทันที</p>
+            </div>
+            <button onclick="closeNurseResultModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-colors text-center shadow-md">
+                รับทราบการประเมินผล
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex items-center space-x-3 text-amber-600">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="text-sm font-bold text-slate-900" id="confirm-title">ยืนยันการทำรายการ</h3>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed" id="confirm-message">ข้อความแจ้งรายละเอียดประกอบการตัดสินใจของคุณ</p>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                <button id="confirm-cancel-btn" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors">ยกเลิก</button>
+                <button id="confirm-success-btn" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg transition-colors">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50 pointer-events-none"></div>
+
+    <script>
+        // Supabase Client
+        const SUPABASE_URL = 'https://nqvamxnnwzgwxhgdzedf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_URNtGhnGYLufeHWiQg2R8w_WYWgSXuZ';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // State
+        let state = {
+            activeMachine: null,
+            configs: {},
+            machines: []
+        };
+
+        window.onload = async function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('qc-date').value = today;
+            document.getElementById('entry-form-date').innerText = formatDateThai(today);
+            await Promise.all([
+                loadMachines(),
+                loadConfigs()
+            ]);
+            renderMachinesUI();
+
+            // ========== Auto-select machine from URL parameter ==========
+            // รองรับลิงค์แยกต่อเครื่อง เช่น nurse_dtx.html?machine=DTX-01
+            const urlParams = new URLSearchParams(window.location.search);
+            const machineParam = urlParams.get('machine') || urlParams.get('m');
+            if (machineParam) {
+                const machine = state.machines.find(m => m.serialno === machineParam);
+                if (machine) {
+                    selectNurseMachine(machine.serialno, machine.name);
+                    // เปลี่ยน title ของ browser ให้รู้ว่าเป็นลิงค์เครื่องไหน
+                    document.title = `QC DTX - ${machine.serialno} (พยาบาล)`;
+                    // แจ้งเตือนผู้ใช้
+                    showToast(`เปิดลิงค์สำหรับเครื่อง ${machine.serialno}${machine.name ? ' (' + machine.name + ')' : ''}`, 'success');
+                } else {
+                    showToast(`ไม่พบเครื่อง "${machineParam}" ในระบบ กรุณาตรวจสอบลิงค์`, 'error');
+                }
+            }
+        };
+
+        async function loadConfigs() {
+            const { data, error } = await supabaseClient
+                .from('qc_configs')
+                .select('*');
+            if (error) {
+                console.error('Error loading configs:', error);
+                showToast('ไม่สามารถโหลดข้อมูลการตั้งค่าได้ กรุณาลองใหม่อีกครั้ง', 'error');
+                useDefaultConfigs();
+                return;
+            }
+            if (data && data.length > 0) {
+                const configs = {};
+                data.forEach(row => {
+                    if (!configs[row.serialno]) configs[row.serialno] = {};
+                    configs[row.serialno][row.level] = {
+                        lot: row.lot,
+                        target: row.target,
+                        sd: row.sd
+                    };
+                });
+                state.configs = configs;
+            } else {
+                useDefaultConfigs();
+            }
+        }
+
+        function useDefaultConfigs() {
+            state.configs = {
+                'DTX-01': {
+                    low: { lot: 'LOT_L101', target: 2.50, sd: 0.15 },
+                    norm: { lot: 'LOT_N201', target: 12.00, sd: 0.60 },
+                    high: { lot: 'LOT_H301', target: 35.00, sd: 1.50 }
+                },
+                'DTX-02': {
+                    low: { lot: 'LOT_L102', target: 2.40, sd: 0.12 },
+                    norm: { lot: 'LOT_N202', target: 11.50, sd: 0.55 },
+                    high: { lot: 'LOT_H302', target: 33.00, sd: 1.40 }
+                },
+                'DTX-03': {
+                    low: { lot: 'LOT_L103', target: 2.60, sd: 0.18 },
+                    norm: { lot: 'LOT_N203', target: 12.50, sd: 0.70 },
+                    high: { lot: 'LOT_H303', target: 36.50, sd: 1.80 }
+                }
+            };
+        }
+
+        // ========== MACHINES (Dynamic from Supabase) ==========
+
+        async function loadMachines() {
+            const { data, error } = await supabaseClient
+                .from('qc_machines')
+                .select('*')
+                .eq('is_active', true)
+                .order('serialno', { ascending: true });
+            if (error) {
+                console.error('❌ Error loading machines:', error);
+                state.machines = [{ serialno: 'DTX-01', name: 'เครื่องที่ 1' }];
+                return;
+            }
+            state.machines = data || [];
+            console.log('✅ qc_machines loaded:', state.machines);
+        }
+
+        function renderMachinesUI() {
+            const machines = state.machines;
+            if (machines.length === 0) return;
+
+            // Searchable Machine Dropdown
+            renderNurseMachineOptions(machines);
+        }
+
+        function renderNurseMachineOptions(machines) {
+            const container = document.getElementById('nurse-machine-options');
+            if (!container) return;
+            container.innerHTML = '';
+            machines.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'px-3 py-1.5 text-xs cursor-pointer hover:bg-cyan-50 flex items-center space-x-2';
+                item.innerHTML = `<i class="fa-solid fa-microscope text-cyan-500 text-[10px]"></i> <span>${m.serialno}${m.name ? ' (' + m.name + ')' : ''}</span>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selectNurseMachine(m.serialno, m.name);
+                };
+                container.appendChild(item);
+            });
+        }
+
+        function toggleNurseMachineDropdown() {
+            const list = document.getElementById('nurse-machine-dropdown');
+            const arrow = document.getElementById('nurse-machine-arrow');
+            const isHidden = list.classList.contains('hidden');
+            list.classList.toggle('hidden');
+            arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            if (isHidden) {
+                document.getElementById('nurse-machine-search').value = '';
+                renderNurseMachineOptions(state.machines);
+                setTimeout(() => document.getElementById('nurse-machine-search').focus(), 100);
+            }
+        }
+
+        function filterNurseMachineDropdown() {
+            const query = document.getElementById('nurse-machine-search').value.toLowerCase();
+            const filtered = state.machines.filter(m => m.serialno.toLowerCase().includes(query));
+            renderNurseMachineOptions(filtered);
+        }
+
+        function selectNurseMachine(serialno, name) {
+            state.activeMachine = serialno;
+            document.getElementById('nurse-machine-display').innerText = `${serialno}${name ? ' (' + name + ')' : ''}`;
+            document.getElementById('nurse-machine-display').className = 'text-slate-700 font-semibold';
+            document.getElementById('nurse-machine-dropdown').classList.add('hidden');
+            document.getElementById('nurse-machine-arrow').style.transform = 'rotate(0deg)';
+            selectMachine(serialno);
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('nurse-machine-search-container');
+            const list = document.getElementById('nurse-machine-dropdown');
+            if (container && list && !container.contains(e.target)) {
+                list.classList.add('hidden');
+                document.getElementById('nurse-machine-arrow').style.transform = 'rotate(0deg)';
+            }
+        });
+
+        function selectMachine(machineId) {
+            state.activeMachine = machineId;
+
+            // Always show the form
+            document.getElementById('qc-entry-placeholder').classList.add('hidden');
+            document.getElementById('qc-entry-form-wrapper').classList.remove('hidden');
+
+            updateFormDetails();
+        }
+
+        function updateFormDetails() {
+            if (!state.activeMachine) return;
+            const mach = state.activeMachine;
+            const config = state.configs[mach];
+
+            document.getElementById('form-title-machine').innerHTML = `<i class="fa-solid fa-file-pen text-cyan-600 mr-1"></i> บันทึกผล QC ของ [ ${mach} ]`;
+            
+            if (config) {
+                document.getElementById('form-lot-low-label').innerText = `Lot: ${config.low?.lot || '-'}`;
+                document.getElementById('form-lot-norm-label').innerText = `Lot: ${config.norm?.lot || '-'}`;
+                document.getElementById('form-lot-high-label').innerText = `Lot: ${config.high?.lot || '-'}`;
+            } else {
+                document.getElementById('form-lot-low-label').innerText = 'Lot: กำลังโหลด...';
+                document.getElementById('form-lot-norm-label').innerText = 'Lot: กำลังโหลด...';
+                document.getElementById('form-lot-high-label').innerText = 'Lot: กำลังโหลด...';
+            }
+        }
+
+        // QC Evaluation
+        function evaluateDataValue(machineId, level, value) {
+            const config = state.configs[machineId] && state.configs[machineId][level];
+            if (!config) return { sdScore: 'N/A', msg: 'ไม่พบข้อมูลเกณฑ์', text: 'text-slate-700', bg: 'bg-slate-50', level: 'Unknown' };
+            
+            const diff = Math.abs(value - config.target);
+            const sdScore = (diff / config.sd).toFixed(2);
+
+            if (sdScore <= 1) {
+                return { sdScore, msg: 'ปกติ (Within ±1SD)', text: 'text-emerald-700', bg: 'bg-emerald-50', level: 'Pass' };
+            } else if (sdScore <= 2) {
+                return { sdScore, msg: 'แจ้งเตือน (Warning ±2SD)', text: 'text-yellow-700', bg: 'bg-yellow-50', level: 'Warning' };
+            } else if (sdScore <= 3) {
+                return { sdScore, msg: 'เตือนปฏิบัติการ (Action ±3SD)', text: 'text-orange-700', bg: 'bg-orange-50', level: 'Action' };
+            } else {
+                return { sdScore, msg: 'ปฏิเสธผลทดสอบ (Reject >3SD)', text: 'text-rose-700', bg: 'bg-rose-50', level: 'Reject' };
+            }
+        }
+
+        // Save QC Result
+        async function saveQCResult(e) {
+            e.preventDefault();
+            if (!state.activeMachine) return;
+
+            const date = document.getElementById('qc-date').value;
+            const operator = document.getElementById('qc-operator').value;
+            const lowVal = parseFloat(document.getElementById('qc-input-low').value);
+            const normVal = parseFloat(document.getElementById('qc-input-norm').value);
+            const highVal = parseFloat(document.getElementById('qc-input-high').value);
+
+            // Insert to Supabase
+            const { error } = await supabaseClient
+                .from('qc_logs')
+                .insert({
+                    date,
+                    serialno: state.activeMachine,
+                    operator,
+                    l: lowVal,
+                    n: normVal,
+                    h: highVal
+                });
+
+            if (error) {
+                console.error('Error saving log:', error);
+                showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
+                return;
+            }
+
+            // Evaluate for display in modal
+            const verdictLow = evaluateDataValue(state.activeMachine, 'low', lowVal);
+            const verdictNorm = evaluateDataValue(state.activeMachine, 'norm', normVal);
+            const verdictHigh = evaluateDataValue(state.activeMachine, 'high', highVal);
+
+            // Show modal
+            document.getElementById('modal-machine-name').innerText = `เครื่องวิเคราะห์: ${state.activeMachine} | วันที่บันทึก: ${formatDateThai(date)}`;
+
+            const setupModalRow = (elId, statusElId, verdict) => {
+                const row = document.getElementById(elId);
+                const statusTxt = document.getElementById(statusElId);
+                statusTxt.innerText = `${verdict.level} (${verdict.sdScore} SD)`;
+                row.className = `flex justify-between items-center p-2 rounded-lg text-xs font-bold ${verdict.bg} ${verdict.text}`;
+            };
+
+            setupModalRow('modal-row-low', 'modal-status-low', verdictLow);
+            setupModalRow('modal-row-norm', 'modal-status-norm', verdictNorm);
+            setupModalRow('modal-row-high', 'modal-status-high', verdictHigh);
+
+            document.getElementById('nurse-result-modal').classList.remove('hidden');
+
+            // Clear form
+            document.getElementById('qc-input-low').value = '';
+            document.getElementById('qc-input-norm').value = '';
+            document.getElementById('qc-input-high').value = '';
+        }
+
+        function closeNurseResultModal() {
+            document.getElementById('nurse-result-modal').classList.add('hidden');
+            showToast('ส่งข้อมูลและอัปเดตสถิติเพื่อประสานงานกับส่วนกลางห้องแล็บสำเร็จ', 'success');
+        }
+
+        // Custom Confirm
+        function showCustomConfirm(title, message, onConfirm) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            
+            const modal = document.getElementById('custom-confirm-modal');
+            modal.classList.remove('hidden');
+
+            const successBtn = document.getElementById('confirm-success-btn');
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+            const newSuccess = successBtn.cloneNode(true);
+            const newCancel = cancelBtn.cloneNode(true);
+
+            successBtn.parentNode.replaceChild(newSuccess, successBtn);
+            cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+            newSuccess.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                onConfirm();
+            });
+
+            newCancel.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+
+        // Formatting
+        function formatDateThai(dateString) {
+            return new Date(dateString).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // Toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-cyan-600');
+            toast.className = `p-3 rounded-xl text-xs font-bold text-white shadow-lg transform translate-y-2 opacity-0 transition-all duration-300 ${bg} pointer-events-auto flex items-center space-x-2`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

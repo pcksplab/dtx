@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลิงค์ด่วนบันทึกผล QC DTX - พยาบาล</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-slate-800 to-cyan-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center space-x-3">
+            <div class="bg-cyan-600 p-2 rounded-xl text-white shadow-md">
+                <i class="fa-solid fa-link text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight">DTX QC - ลิงค์ด่วนสำหรับพยาบาล</h1>
+                <p class="text-[11px] text-cyan-200">เลือกเครื่องวิเคราะห์ของคุณ แล้วกดเพื่อเปิดฟอร์มบันทึกผลโดยตรง</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <!-- Instructions -->
+        <div class="bg-cyan-50 border border-cyan-200 rounded-2xl p-5 space-y-2">
+            <h2 class="text-sm font-bold text-cyan-900 flex items-center">
+                <i class="fa-solid fa-circle-info text-cyan-600 mr-2"></i>
+                วิธีใช้งาน
+            </h2>
+            <ol class="text-xs text-cyan-800 list-decimal list-inside space-y-1.5 leading-relaxed">
+                <li>กดปุ่ม <b>"เปิดฟอร์ม"</b> เพื่อเข้าหน้าบันทึกผล QC ของเครื่องนั้นทันที (ระบบเลือกเครื่องให้อัตโนมัติ)</li>
+                <li>หรือกดปุ่ม <b>"คัดลอกลิงค์"</b> เพื่อนำไป <b>Save เป็น Favorites/Bookmarks</b> ที่เบราว์เซอร์มือถือหรือคอมพิวเตอร์</li>
+                <li>ครั้งต่อไปเพียงเปิดลิงค์จาก Bookmark ก็จะเข้าหน้าบันทึกผลของเครื่องนั้นได้ทันที <b>ไม่ต้องเลือกเครื่องเองอีก</b></li>
+            </ol>
+        </div>
+
+        <!-- Machine List -->
+        <div id="machine-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Loading state -->
+            <div class="col-span-2 text-center py-12 text-slate-400">
+                <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+                <p class="text-xs">กำลังโหลดรายการเครื่องวิเคราะห์...</p>
+            </div>
+        </div>
+
+        <!-- Fallback note -->
+        <div class="text-center text-[10px] text-slate-400 pt-4">
+            <i class="fa-solid fa-shield-halved mr-1"></i>
+            ลิงค์เหล่านี้แยกตามเครื่องจริงในฐานข้อมูล หากต้องเพิ่มเครื่องใหม่ ให้เพิ่มใน Supabase (qc_machines) แล้วลิงค์จะปรากฏอัตโนมัติ
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50 pointer-events-none"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://nqvamxnnwzgwxhgdzedf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_URNtGhnGYLufeHWiQg2R8w_WYWgSXuZ';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const MACHINE_COLORS = [
+            { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', btn: 'bg-cyan-600 hover:bg-cyan-700' },
+            { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', btn: 'bg-emerald-600 hover:bg-emerald-700' },
+            { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', btn: 'bg-purple-600 hover:bg-purple-700' },
+            { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', btn: 'bg-amber-600 hover:bg-amber-700' },
+            { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', btn: 'bg-rose-600 hover:bg-rose-700' }
+        ];
+
+        window.onload = async function() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('qc_machines')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('serialno', { ascending: true });
+
+                if (error) throw error;
+
+                const machines = data || [];
+                const container = document.getElementById('machine-list');
+
+                if (machines.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-2 text-center py-12 text-slate-400">
+                            <i class="fa-solid fa-circle-exclamation text-3xl mb-2"></i>
+                            <p class="text-xs">ไม่พบเครื่องวิเคราะห์ในระบบ</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                machines.forEach((m, idx) => {
+                    const color = MACHINE_COLORS[idx % MACHINE_COLORS.length];
+                    const url = `nurse_dtx.html?machine=${encodeURIComponent(m.serialno)}`;
+
+                    const card = document.createElement('div');
+                    card.className = `${color.bg} ${color.border} border-2 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow`;
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <i class="fa-solid fa-microscope ${color.text} text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-base font-bold text-slate-800 truncate">${m.serialno}</h3>
+                                <p class="text-xs text-slate-500 truncate">${m.name || 'เครื่องวิเคราะห์น้ำตาล'}</p>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-2 text-[10px] font-mono text-slate-500 break-all">${url}</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="${url}" class="py-2.5 ${color.btn} text-white text-xs font-bold rounded-lg text-center shadow transition-colors flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>เปิดฟอร์ม</span>
+                            </a>
+                            <button onclick="copyLink('${url}', '${m.serialno}')" class="py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition-colors flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-copy"></i>
+                                <span>คัดลอกลิงค์</span>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error(err);
+                const container = document.getElementById('machine-list');
+                container.innerHTML = `
+                    <div class="col-span-2 text-center py-12 text-rose-400">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
+                        <p class="text-xs">เกิดข้อผิดพลาด: ${err.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        function copyLink(url, serialno) {
+            const fullUrl = new URL(url, window.location.href).href;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(fullUrl).then(() => {
+                    showToast(`คัดลอกลิงค์ของ ${serialno} เรียบร้อย`, 'success');
+                }).catch(() => fallbackCopy(fullUrl, serialno));
+            } else {
+                fallbackCopy(fullUrl, serialno);
+            }
+        }
+
+        function fallbackCopy(text, serialno) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(`คัดลอกลิงค์ของ ${serialno} เรียบร้อย`, 'success');
+            } catch (e) {
+                showToast('ไม่สามารถคัดลอกได้ กรุณาคัดลอกด้วยตนเอง', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-cyan-600');
+            toast.className = `p-3 rounded-xl text-xs font-bold text-white shadow-lg transform translate-y-2 opacity-0 transition-all duration-300 ${bg} pointer-events-auto flex items-center space-x-2`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
