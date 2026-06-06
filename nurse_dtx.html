@@ -30,6 +30,10 @@
         body { font-family: 'Sarabun', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes lockPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .lock-icon-pulse { animation: lockPulse 2s ease-in-out infinite; }
+        @keyframes lockFadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .lock-card-fadein { animation: lockFadeIn 0.3s ease-out; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
@@ -61,7 +65,7 @@
             <div class="lg:col-span-1 space-y-6">
 
                 <!-- Machine Selection (Searchable) -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+                <div id="nurse-machine-selection-card" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
                     <h2 class="text-sm font-bold text-slate-700 flex items-center">
                         <i class="fa-solid fa-microscope text-cyan-600 mr-2 text-base"></i>
                         เลือกเครื่องวิเคราะห์
@@ -77,6 +81,35 @@
                             </div>
                             <div id="nurse-machine-options" class="py-1">
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Locked Machine Card (แสดงเมื่อ URL มี ?machine=XXX) -->
+                <div id="nurse-machine-locked-card" class="hidden">
+                    <div class="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl p-5 shadow-md border-2 border-emerald-300 space-y-3 lock-card-fadein">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-sm font-bold text-emerald-900 flex items-center">
+                                <i class="fa-solid fa-microscope text-emerald-600 mr-2 text-base"></i>
+                                เครื่องวิเคราะห์
+                            </h2>
+                            <span class="inline-flex items-center space-x-1 bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-inner">
+                                <i class="fa-solid fa-lock lock-icon-pulse"></i>
+                                <span>ล็อค</span>
+                            </span>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 flex items-center space-x-3 border border-emerald-200 shadow-sm">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
+                                <i class="fa-solid fa-microscope text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-base font-bold text-slate-800 truncate locked-machine-serial" id="locked-machine-serial">-</p>
+                                <p class="text-xs text-slate-500 truncate locked-machine-name" id="locked-machine-name">-</p>
+                            </div>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start space-x-2 text-[10px] text-amber-800">
+                            <i class="fa-solid fa-circle-info text-amber-500 mt-0.5"></i>
+                            <p class="leading-relaxed">ลิงค์นี้ถูกผูกกับเครื่องนี้ กรุณาใช้ลิงค์เฉพาะเครื่องที่ได้รับเท่านั้น</p>
                         </div>
                     </div>
                 </div>
@@ -229,7 +262,7 @@
             if (machineParam) {
                 const machine = state.machines.find(m => m.serialno === machineParam);
                 if (machine) {
-                    selectNurseMachine(machine.serialno, machine.name);
+                    applyLockedMachineMode(machine);
                     // เปลี่ยน title ของ browser ให้รู้ว่าเป็นลิงค์เครื่องไหน
                     document.title = `QC DTX - ${machine.serialno} (พยาบาล)`;
                     // แจ้งเตือนผู้ใช้
@@ -239,6 +272,26 @@
                 }
             }
         };
+
+        // ========== Locked Machine Mode ==========
+        // ล็อคเครื่องจาก URL เพื่อไม่ให้ผู้ใช้เลือกเครื่องอื่น
+        function applyLockedMachineMode(machine) {
+            // 1. ซ่อน dropdown เลือกเครื่องแบบปกติ
+            const selectionCard = document.getElementById('nurse-machine-selection-card');
+            if (selectionCard) selectionCard.classList.add('hidden');
+
+            // 2. แสดงการ์ดล็อค
+            const lockedCard = document.getElementById('nurse-machine-locked-card');
+            if (lockedCard) {
+                lockedCard.classList.remove('hidden');
+                // ใส่ข้อมูลเครื่อง
+                document.getElementById('locked-machine-serial').innerText = machine.serialno;
+                document.getElementById('locked-machine-name').innerText = machine.name || '';
+            }
+
+            // 3. Auto-select เครื่อง (ไม่ผ่าน dropdown)
+            selectMachine(machine.serialno);
+        }
 
         async function loadConfigs() {
             const { data, error } = await supabaseClient
