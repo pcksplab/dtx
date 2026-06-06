@@ -4,37 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ลิงค์ด่วนบันทึกผล QC DTX - พยาบาล</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+        @media print {
+            @page { margin: 1cm; size: A4; }
+            body { background: white !important; padding: 0 !important; }
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; padding: 0; }
+            .no-print { display: none !important; }
+        }
+        #qr-code-container img, #qr-code-container canvas,
+        .print-qr-item img, .print-qr-item canvas { display: block; margin: 0 auto; }
+        .print-qr-item { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 12px; text-align: center; background: white; page-break-inside: avoid; }
+        .print-qr-item .qr-wrapper { background: white; padding: 8px; display: inline-block; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
 
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-slate-800 to-cyan-900 text-white shadow-md sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center space-x-3">
-            <div class="bg-cyan-600 p-2 rounded-xl text-white shadow-md">
-                <i class="fa-solid fa-link text-xl"></i>
+    <header class="bg-gradient-to-r from-slate-800 to-cyan-900 text-white shadow-md sticky top-0 z-40 no-print">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 min-w-0">
+                <div class="bg-cyan-600 p-2 rounded-xl text-white shadow-md shrink-0">
+                    <i class="fa-solid fa-link text-xl"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-lg font-bold tracking-tight truncate">DTX QC - ลิงค์ด่วนสำหรับพยาบาล</h1>
+                    <p class="text-[11px] text-cyan-200 truncate">เลือกเครื่องวิเคราะห์ของคุณ แล้วกดเพื่อเปิดฟอร์มบันทึกผลโดยตรง</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-lg font-bold tracking-tight">DTX QC - ลิงค์ด่วนสำหรับพยาบาล</h1>
-                <p class="text-[11px] text-cyan-200">เลือกเครื่องวิเคราะห์ของคุณ แล้วกดเพื่อเปิดฟอร์มบันทึกผลโดยตรง</p>
-            </div>
+            <button onclick="printAllQRCodes()" class="shrink-0 px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center space-x-1.5">
+                <i class="fa-solid fa-print"></i>
+                <span class="hidden sm:inline">พิมพ์ QR ทั้งหมด</span>
+                <span class="sm:hidden">พิมพ์</span>
+            </button>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        <!-- Instructions -->
+    <main class="max-w-4xl mx-auto px-4 py-6 space-y-6 no-print">
         <div class="bg-cyan-50 border border-cyan-200 rounded-2xl p-5 space-y-2">
             <h2 class="text-sm font-bold text-cyan-900 flex items-center">
                 <i class="fa-solid fa-circle-info text-cyan-600 mr-2"></i>
@@ -43,30 +59,69 @@
             <ol class="text-xs text-cyan-800 list-decimal list-inside space-y-1.5 leading-relaxed">
                 <li>กดปุ่ม <b>"เปิดฟอร์ม"</b> เพื่อเข้าหน้าบันทึกผล QC ของเครื่องนั้นทันที (ระบบเลือกเครื่องให้อัตโนมัติ)</li>
                 <li>หรือกดปุ่ม <b>"คัดลอกลิงค์"</b> เพื่อนำไป <b>Save เป็น Favorites/Bookmarks</b> ที่เบราว์เซอร์มือถือหรือคอมพิวเตอร์</li>
-                <li>ครั้งต่อไปเพียงเปิดลิงค์จาก Bookmark ก็จะเข้าหน้าบันทึกผลของเครื่องนั้นได้ทันที <b>ไม่ต้องเลือกเครื่องเองอีก</b></li>
+                <li>กดปุ่ม <b>"QR Code"</b> เพื่อดู/ดาวน์โหลด/พิมพ์ QR Code นำไปแปะหน้าเครื่อง ให้พยาบาลสแกนเข้าฟอร์มได้ทันที</li>
+                <li>ครั้งต่อไปเพียงเปิดลิงค์จาก Bookmark หรือสแกน QR ก็จะเข้าหน้าบันทึกผลของเครื่องนั้นได้ทันที <b>ไม่ต้องเลือกเครื่องเองอีก</b></li>
             </ol>
         </div>
 
-        <!-- Machine List -->
         <div id="machine-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Loading state -->
             <div class="col-span-2 text-center py-12 text-slate-400">
                 <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
                 <p class="text-xs">กำลังโหลดรายการเครื่องวิเคราะห์...</p>
             </div>
         </div>
 
-        <!-- Fallback note -->
         <div class="text-center text-[10px] text-slate-400 pt-4">
             <i class="fa-solid fa-shield-halved mr-1"></i>
-            ลิงค์เหล่านี้แยกตามเครื่องจริงในฐานข้อมูล หากต้องเพิ่มเครื่องใหม่ ให้เพิ่มใน Supabase (qc_machines) แล้วลิงค์จะปรากฏอัตโนมัติ
+            ลิงค์เหล่านี้แยกตามเครื่องจริงในฐานข้อมูล หากต้องการเพิ่มเครื่องใหม่ ให้เพิ่มใน Supabase (qc_machines) แล้วลิงค์จะปรากฏอัตโนมัติ
         </div>
     </main>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50 pointer-events-none"></div>
+    <div id="qr-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 animate-fadeIn space-y-4">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center text-cyan-600 mx-auto mb-2 text-xl shadow-inner">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900" id="qr-modal-title">QR Code</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">สแกนด้วยกล้องมือถือเพื่อเปิดฟอร์มบันทึกผล QC</p>
+            </div>
+            <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex items-center justify-center min-h-[272px]">
+                <div id="qr-code-container"></div>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-2 text-[10px] font-mono text-slate-500 break-all text-center" id="qr-modal-url"></div>
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="downloadQR()" class="py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-download"></i>
+                    <span>ดาวน์โหลด</span>
+                </button>
+                <button onclick="printSingleQR()" class="py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-print"></i>
+                    <span>พิมพ์</span>
+                </button>
+                <button onclick="closeQRCode()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>ปิด</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area" class="hidden">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">QR Code สำหรับบันทึกผล QC DTX</h1>
+            <p class="text-sm text-slate-500">สแกนด้วยกล้องมือถือเพื่อเปิดฟอร์มบันทึกผล QC ของแต่ละเครื่อง</p>
+        </div>
+        <div id="print-qr-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+        <div class="text-center text-[10px] text-slate-400 mt-6 pt-4 border-t border-slate-200">
+            พิมพ์เมื่อ: <span id="print-timestamp"></span> | พัฒนาโดย PCK Lab
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50 pointer-events-none no-print"></div>
 
     <script>
+    (function() {
         const SUPABASE_URL = 'https://nqvamxnnwzgwxhgdzedf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_URNtGhnGYLufeHWiQg2R8w_WYWgSXuZ';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -79,6 +134,235 @@
             { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', btn: 'bg-rose-600 hover:bg-rose-700' }
         ];
 
+        let currentQRMachine = null;
+        let allMachines = [];
+
+        function buildAbsoluteURL(relativePath) {
+            try {
+                if (!window.location.origin || window.location.protocol === 'file:') {
+                    return relativePath;
+                }
+                const baseURL = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+                return new URL(relativePath, baseURL).href;
+            } catch (e) {
+                return relativePath;
+            }
+        }
+
+        function makeMachineURL(serialno) {
+            const relative = 'nurse_dtx.html?machine=' + encodeURIComponent(serialno);
+            return buildAbsoluteURL(relative);
+        }
+
+        function generateQRCode(elementId, text, size) {
+            const el = document.getElementById(elementId);
+            if (!el) return null;
+            el.innerHTML = '';
+            try {
+                return new QRCode(el, {
+                    text: text,
+                    width: size || 240,
+                    height: size || 240,
+                    colorDark: '#0f172a',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (e) {
+                console.error('QR generation error:', e);
+                return null;
+            }
+        }
+
+        function renderMachines(machines) {
+            const container = document.getElementById('machine-list');
+            if (machines.length === 0) {
+                container.innerHTML = '<div class="col-span-2 text-center py-12 text-slate-400"><i class="fa-solid fa-circle-exclamation text-3xl mb-2"></i><p class="text-xs">ไม่พบเครื่องวิเคราะห์ในระบบ</p></div>';
+                return;
+            }
+            container.innerHTML = '';
+            machines.forEach(function(m, idx) {
+                const color = MACHINE_COLORS[idx % MACHINE_COLORS.length];
+                const relativeURL = 'nurse_dtx.html?machine=' + encodeURIComponent(m.serialno);
+                const displayURL = m.serialno;
+                const safeName = (m.name || '').replace(/'/g, "\\'").replace(/"/g, '"');
+
+                const card = document.createElement('div');
+                card.className = color.bg + ' ' + color.border + ' border-2 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow';
+                card.innerHTML = ''
+                    + '<div class="flex items-center space-x-3">'
+                    +   '<div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">'
+                    +     '<i class="fa-solid fa-microscope ' + color.text + ' text-xl"></i>'
+                    +   '</div>'
+                    +   '<div class="flex-1 min-w-0">'
+                    +     '<h3 class="text-base font-bold text-slate-800 truncate">' + m.serialno + '</h3>'
+                    +     '<p class="text-xs text-slate-500 truncate">' + (m.name || 'เครื่องวิเคราะห์น้ำตาล') + '</p>'
+                    +   '</div>'
+                    + '</div>'
+                    + '<div class="bg-white rounded-lg p-2 text-[10px] font-mono text-slate-500 break-all">' + relativeURL + '</div>'
+                    + '<div class="grid grid-cols-3 gap-2">'
+                    +   '<a href="' + relativeURL + '" class="py-2.5 ' + color.btn + ' text-white text-xs font-bold rounded-lg text-center shadow transition-colors flex items-center justify-center" title="เปิดฟอร์ม">'
+                    +     '<i class="fa-solid fa-arrow-up-right-from-square"></i>'
+                    +   '</a>'
+                    +   '<button onclick="copyLink(\'' + relativeURL + '\', \'' + m.serialno + '\')" class="py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition-colors flex items-center justify-center" title="คัดลอกลิงค์">'
+                    +     '<i class="fa-solid fa-copy"></i>'
+                    +   '</button>'
+                    +   '<button onclick="showQRCode(\'' + m.serialno + '\', \'' + safeName + '\')" class="py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center justify-center" title="QR Code">'
+                    +     '<i class="fa-solid fa-qrcode"></i>'
+                    +   '</button>'
+                    + '</div>';
+                container.appendChild(card);
+            });
+        }
+
+        window.copyLink = function(url, serialno) {
+            const fullUrl = buildAbsoluteURL(url);
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(fullUrl).then(function() {
+                    showToast('คัดลอกลิงค์ของ ' + serialno + ' เรียบร้อย', 'success');
+                }).catch(function() {
+                    fallbackCopy(fullUrl, serialno);
+                });
+            } else {
+                fallbackCopy(fullUrl, serialno);
+            }
+        };
+
+        function fallbackCopy(text, serialno) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('คัดลอกลิงค์ของ ' + serialno + ' เรียบร้อย', 'success');
+            } catch (e) {
+                showToast('ไม่สามารถคัดลอกได้ กรุณาคัดลอกด้วยตนเอง', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(message, type) {
+            type = type || 'success';
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-cyan-600');
+            toast.className = 'p-3 rounded-xl text-xs font-bold text-white shadow-lg transform translate-y-2 opacity-0 transition-all duration-300 ' + bg + ' pointer-events-auto flex items-center space-x-2';
+            toast.innerHTML = '<i class="fa-solid fa-circle-info"></i> <span>' + message + '</span>';
+            container.appendChild(toast);
+            setTimeout(function() { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+            setTimeout(function() {
+                toast.classList.add('opacity-0');
+                setTimeout(function() { if (toast.parentNode) container.removeChild(toast); }, 300);
+            }, 3500);
+        }
+
+        window.showQRCode = function(serialno, name) {
+            currentQRMachine = { serialno: serialno, name: name || '' };
+            const fullURL = makeMachineURL(serialno);
+            const titleEl = document.getElementById('qr-modal-title');
+            const urlEl = document.getElementById('qr-modal-url');
+            if (titleEl) titleEl.innerText = 'QR Code เครื่อง ' + serialno + (name ? ' (' + name + ')' : '');
+            if (urlEl) urlEl.innerText = fullURL;
+            const modal = document.getElementById('qr-modal');
+            if (modal) modal.classList.remove('hidden');
+            setTimeout(function() {
+                generateQRCode('qr-code-container', fullURL, 240);
+            }, 50);
+        };
+
+        window.closeQRCode = function() {
+            const modal = document.getElementById('qr-modal');
+            if (modal) modal.classList.add('hidden');
+            const container = document.getElementById('qr-code-container');
+            if (container) container.innerHTML = '';
+            currentQRMachine = null;
+        };
+
+        window.downloadQR = function() {
+            if (!currentQRMachine) {
+                showToast('ไม่พบ QR Code ที่จะดาวน์โหลด', 'error');
+                return;
+            }
+            const container = document.getElementById('qr-code-container');
+            const canvas = container ? container.querySelector('canvas') : null;
+            const img = container ? container.querySelector('img') : null;
+            let dataURL = null;
+            if (canvas && canvas.toDataURL) {
+                try {
+                    dataURL = canvas.toDataURL('image/png');
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            if (!dataURL && img && img.src) {
+                dataURL = img.src;
+            }
+            if (!dataURL) {
+                showToast('ไม่สามารถสร้างไฟล์ PNG ได้ ลองพิมพ์แทน', 'error');
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = 'QR_' + currentQRMachine.serialno.replace(/[^a-zA-Z0-9-_]/g, '_') + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('ดาวน์โหลด QR Code เรียบร้อย', 'success');
+        };
+
+        window.printSingleQR = function() {
+            if (!currentQRMachine) {
+                showToast('ไม่พบ QR Code ที่จะพิมพ์', 'error');
+                return;
+            }
+            const grid = document.getElementById('print-qr-grid');
+            const ts = document.getElementById('print-timestamp');
+            if (!grid) return;
+            grid.innerHTML = ''
+                + '<div class="print-qr-item col-span-2 md:col-span-3">'
+                +   '<h2 class="text-lg font-bold text-slate-800 mb-1">เครื่อง ' + currentQRMachine.serialno + (currentQRMachine.name ? ' (' + currentQRMachine.name + ')' : '') + '</h2>'
+                +   '<div class="qr-wrapper" id="single-print-qr"></div>'
+                +   '<p class="text-[10px] font-mono text-slate-500 mt-2 break-all">' + makeMachineURL(currentQRMachine.serialno) + '</p>'
+                +   '<p class="text-[10px] text-slate-400 mt-2">สแกนด้วยกล้องมือถือเพื่อเปิดฟอร์มบันทึกผล QC</p>'
+                + '</div>';
+            if (ts) ts.innerText = new Date().toLocaleString('th-TH');
+            setTimeout(function() {
+                generateQRCode('single-print-qr', makeMachineURL(currentQRMachine.serialno), 260);
+                setTimeout(function() { window.print(); }, 200);
+            }, 100);
+        };
+
+        window.printAllQRCodes = function() {
+            if (!allMachines || allMachines.length === 0) {
+                showToast('ยังไม่มีข้อมูลเครื่องวิเคราะห์', 'error');
+                return;
+            }
+            const grid = document.getElementById('print-qr-grid');
+            const ts = document.getElementById('print-timestamp');
+            if (!grid) return;
+            grid.innerHTML = '';
+            allMachines.forEach(function(m, idx) {
+                const item = document.createElement('div');
+                item.className = 'print-qr-item';
+                const qrDivId = 'print-qr-' + idx;
+                item.innerHTML = ''
+                    + '<h3 class="text-sm font-bold text-slate-800 mb-1">' + m.serialno + '</h3>'
+                    + (m.name ? '<p class="text-[10px] text-slate-500 mb-2 truncate">' + m.name + '</p>' : '')
+                    + '<div class="qr-wrapper" id="' + qrDivId + '"></div>';
+                grid.appendChild(item);
+            });
+            if (ts) ts.innerText = new Date().toLocaleString('th-TH');
+            setTimeout(function() {
+                allMachines.forEach(function(m, idx) {
+                    const qrDivId = 'print-qr-' + idx;
+                    generateQRCode(qrDivId, makeMachineURL(m.serialno), 180);
+                });
+                setTimeout(function() { window.print(); }, 400);
+            }, 100);
+        };
+
         window.onload = async function() {
             try {
                 const { data, error } = await supabaseClient
@@ -90,102 +374,39 @@
                 if (error) throw error;
 
                 const machines = data || [];
-                const container = document.getElementById('machine-list');
-
-                if (machines.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-2 text-center py-12 text-slate-400">
-                            <i class="fa-solid fa-circle-exclamation text-3xl mb-2"></i>
-                            <p class="text-xs">ไม่พบเครื่องวิเคราะห์ในระบบ</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = '';
-                machines.forEach((m, idx) => {
-                    const color = MACHINE_COLORS[idx % MACHINE_COLORS.length];
-                    const url = `nurse_dtx.html?machine=${encodeURIComponent(m.serialno)}`;
-
-                    const card = document.createElement('div');
-                    card.className = `${color.bg} ${color.border} border-2 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-shadow`;
-                    card.innerHTML = `
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                                <i class="fa-solid fa-microscope ${color.text} text-xl"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="text-base font-bold text-slate-800 truncate">${m.serialno}</h3>
-                                <p class="text-xs text-slate-500 truncate">${m.name || 'เครื่องวิเคราะห์น้ำตาล'}</p>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg p-2 text-[10px] font-mono text-slate-500 break-all">${url}</div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <a href="${url}" class="py-2.5 ${color.btn} text-white text-xs font-bold rounded-lg text-center shadow transition-colors flex items-center justify-center space-x-1.5">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                <span>เปิดฟอร์ม</span>
-                            </a>
-                            <button onclick="copyLink('${url}', '${m.serialno}')" class="py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition-colors flex items-center justify-center space-x-1.5">
-                                <i class="fa-solid fa-copy"></i>
-                                <span>คัดลอกลิงค์</span>
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-
+                allMachines = machines;
+                renderMachines(machines);
             } catch (err) {
                 console.error(err);
                 const container = document.getElementById('machine-list');
-                container.innerHTML = `
-                    <div class="col-span-2 text-center py-12 text-rose-400">
-                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
-                        <p class="text-xs">เกิดข้อผิดพลาด: ${err.message}</p>
-                    </div>
-                `;
+                if (container) {
+                    container.innerHTML = ''
+                        + '<div class="col-span-2 text-center py-12 text-rose-400">'
+                        +   '<i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>'
+                        +   '<p class="text-xs">เกิดข้อผิดพลาด: ' + (err.message || 'ไม่ทราบสาเหตุ') + '</p>'
+                        + '</div>';
+                }
             }
         };
 
-        function copyLink(url, serialno) {
-            const fullUrl = new URL(url, window.location.href).href;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(fullUrl).then(() => {
-                    showToast(`คัดลอกลิงค์ของ ${serialno} เรียบร้อย`, 'success');
-                }).catch(() => fallbackCopy(fullUrl, serialno));
-            } else {
-                fallbackCopy(fullUrl, serialno);
+        // ปิด modal เมื่อคลิกที่ backdrop
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('qr-modal');
+            if (modal && !modal.classList.contains('hidden') && e.target === modal) {
+                closeQRCode();
             }
-        }
+        });
 
-        function fallbackCopy(text, serialno) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showToast(`คัดลอกลิงค์ของ ${serialno} เรียบร้อย`, 'success');
-            } catch (e) {
-                showToast('ไม่สามารถคัดลอกได้ กรุณาคัดลอกด้วยตนเอง', 'error');
+        // ปิด modal เมื่อกด ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('qr-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeQRCode();
+                }
             }
-            document.body.removeChild(textArea);
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            let bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-cyan-600');
-            toast.className = `p-3 rounded-xl text-xs font-bold text-white shadow-lg transform translate-y-2 opacity-0 transition-all duration-300 ${bg} pointer-events-auto flex items-center space-x-2`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-                setTimeout(() => container.removeChild(toast), 300);
-            }, 3500);
-        }
+        });
+    })();
     </script>
 </body>
 </html>
