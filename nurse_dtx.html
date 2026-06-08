@@ -124,28 +124,89 @@
                             <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-medium" id="entry-form-date"></span>
                         </div>
 
+                        <!-- Level 1 - Low -->
                         <div class="bg-blue-50/40 p-3.5 rounded-xl border border-blue-100 space-y-2">
                             <div class="flex justify-between items-center text-xs">
                                 <span class="font-bold text-blue-800">Level 1 - Low</span>
-                                <span class="text-[11px] text-slate-400 font-medium" id="form-lot-low-label">Lot: -</span>
+                            </div>
+                            <div class="relative" id="lot-qc-low-container">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">LOT. QC</label>
+                                <div onclick="toggleGenericDropdown('lot-qc-low')" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs cursor-pointer flex items-center justify-between gap-2 hover:border-cyan-400 transition-colors">
+                                    <span id="lot-qc-low-display" class="text-slate-400">-- เลือก LOT --</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" id="lot-qc-low-arrow"></i>
+                                </div>
+                                <div id="lot-qc-low-dropdown" class="hidden absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                    <div class="p-2 border-b border-slate-100">
+                                        <input type="text" id="lot-qc-low-search" placeholder="ค้นหา LOT..." oninput="filterGenericDropdown('lot-qc-low')" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-cyan-400">
+                                    </div>
+                                    <div id="lot-qc-low-options" class="py-1"></div>
+                                </div>
                             </div>
                             <input type="number" step="any" id="qc-input-low" required placeholder="กรอกผลตรวจวัด" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
 
+                        <!-- Level 2 - Normal -->
                         <div class="bg-emerald-50/40 p-3.5 rounded-xl border border-emerald-100 space-y-2">
                             <div class="flex justify-between items-center text-xs">
                                 <span class="font-bold text-emerald-800">Level 2 - Normal</span>
-                                <span class="text-[11px] text-slate-400 font-medium" id="form-lot-norm-label">Lot: -</span>
+                            </div>
+                            <div class="relative" id="lot-qc-norm-container">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">LOT. QC</label>
+                                <div onclick="toggleGenericDropdown('lot-qc-norm')" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs cursor-pointer flex items-center justify-between gap-2 hover:border-cyan-400 transition-colors">
+                                    <span id="lot-qc-norm-display" class="text-slate-400">-- เลือก LOT --</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" id="lot-qc-norm-arrow"></i>
+                                </div>
+                                <div id="lot-qc-norm-dropdown" class="hidden absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                    <div class="p-2 border-b border-slate-100">
+                                        <input type="text" id="lot-qc-norm-search" placeholder="ค้นหา LOT..." oninput="filterGenericDropdown('lot-qc-norm')" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-cyan-400">
+                                    </div>
+                                    <div id="lot-qc-norm-options" class="py-1"></div>
+                                </div>
                             </div>
                             <input type="number" step="any" id="qc-input-norm" required placeholder="กรอกผลตรวจวัด" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
                         </div>
 
+                        <!-- Level 3 - High -->
                         <div class="bg-rose-50/40 p-3.5 rounded-xl border border-rose-100 space-y-2">
                             <div class="flex justify-between items-center text-xs">
                                 <span class="font-bold text-rose-800">Level 3 - High</span>
-                                <span class="text-[11px] text-slate-400 font-medium" id="form-lot-high-label">Lot: -</span>
+                            </div>
+                            <div class="relative" id="lot-qc-high-container">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">LOT. QC</label>
+                                <div onclick="toggleGenericDropdown('lot-qc-high')" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs cursor-pointer flex items-center justify-between gap-2 hover:border-cyan-400 transition-colors">
+                                    <span id="lot-qc-high-display" class="text-slate-400">-- เลือก LOT --</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" id="lot-qc-high-arrow"></i>
+                                </div>
+                                <div id="lot-qc-high-dropdown" class="hidden absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                    <div class="p-2 border-b border-slate-100">
+                                        <input type="text" id="lot-qc-high-search" placeholder="ค้นหา LOT..." oninput="filterGenericDropdown('lot-qc-high')" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-cyan-400">
+                                    </div>
+                                    <div id="lot-qc-high-options" class="py-1"></div>
+                                </div>
                             </div>
                             <input type="number" step="any" id="qc-input-high" required placeholder="กรอกผลตรวจวัด" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-rose-500 outline-none">
+                        </div>
+
+                        <!-- LOT. Strip -->
+                        <div class="bg-purple-50/40 p-3.5 rounded-xl border border-purple-100 space-y-2">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-purple-800">LOT. Strip</span>
+                            </div>
+                            <div class="relative" id="lot-strip-container">
+                                <div onclick="toggleGenericDropdown('lot-strip')" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs cursor-pointer flex items-center justify-between gap-2 hover:border-cyan-400 transition-colors">
+                                    <span id="lot-strip-display" class="text-slate-400">-- เลือก LOT Strip --</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" id="lot-strip-arrow"></i>
+                                </div>
+                                <div id="lot-strip-dropdown" class="hidden absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                                    <div class="p-2 border-b border-slate-100 flex gap-1">
+                                        <input type="text" id="lot-strip-search" placeholder="ค้นหาหรือพิมพ์ LOT ใหม่..." oninput="filterGenericDropdown('lot-strip')" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-cyan-400" style="min-width:0;">
+                                        <button type="button" onclick="addNewStripLot()" class="shrink-0 px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded transition-colors">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div id="lot-strip-options" class="py-1"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -155,7 +216,8 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-500 mb-1">วันที่ตรวจวัด</label>
-                                <input type="date" id="qc-date" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-cyan-500 outline-none">
+                                <input type="date" id="qc-date" required onchange="onDateChange()" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-cyan-500 outline-none">
+                                <span id="daily-count-display" class="block text-[10px] text-cyan-700 font-bold mt-1"></span>
                             </div>
                         </div>
 
@@ -204,9 +266,9 @@
                     <span id="modal-status-high" class="font-bold">-</span>
                 </div>
             </div>
-            <div class="bg-amber-50 p-2.5 border border-amber-100 rounded-xl flex items-start space-x-2 text-[11px] text-amber-800">
-                <i class="fa-solid fa-circle-nodes text-amber-500 mt-0.5"></i>
-                <p class="leading-relaxed">ข้อมูลดิบและระบบสถิตินี้ถูกส่งเข้าสู่ระบบจัดการกลางเรียบร้อยแล้ว หากพบสถานะนอกขอบเขตเกณฑ์ควบคุม (Out of control / Reject) กรุณาประสานงานแจ้งห้องปฏิบัติการทันที</p>
+            <div id="modal-conclusion" class="p-2.5 border rounded-xl flex items-start space-x-2 text-[11px]">
+                <i id="modal-conclusion-icon" class="fa-solid fa-circle-check mt-0.5"></i>
+                <p id="modal-conclusion-text" class="leading-relaxed">-</p>
             </div>
             <button onclick="closeNurseResultModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-colors text-center shadow-md">
                 รับทราบการประเมินผล
@@ -229,6 +291,43 @@
         </div>
     </div>
 
+    <!-- Add Strip Lot Modal -->
+    <div id="add-strip-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex items-center space-x-3 text-purple-600">
+                <i class="fa-solid fa-boxes-stacked text-2xl"></i>
+                <h3 class="text-sm font-bold text-slate-900">เพิ่ม LOT Strip ใหม่</h3>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-500 mb-1">LOT Strip <span class="text-rose-500">*</span></label>
+                    <input type="text" id="new-strip-lot" placeholder="กรอกเลข LOT Strip" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-500 mb-1">ยี่ห้อ</label>
+                    <input type="text" id="new-strip-brand" placeholder="(ตัวเลือก) ยี่ห้อ strip" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-500 mb-1">วันหมดอายุ</label>
+                    <input type="date" id="new-strip-expiry" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                <button onclick="closeAddStripModal()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors">ยกเลิก</button>
+                <button onclick="confirmAddStripLot()" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg transition-colors">เพิ่ม LOT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 flex flex-col items-center space-y-3 max-w-xs w-full">
+            <div class="w-12 h-12 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin"></div>
+            <p class="text-sm font-bold text-slate-800" id="global-loading-text">กำลังโหลดข้อมูล...</p>
+            <p class="text-[11px] text-slate-500" id="global-loading-subtext">กรุณารอสักครู่</p>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 space-y-2 z-50 pointer-events-none"></div>
 
@@ -242,57 +341,57 @@
         let state = {
             activeMachine: null,
             configs: {},
-            machines: []
+            machines: [],
+            allQcLots: [],      // { lot, level, serialno } from qc_configs
+            stripLots: []       // { lot_strip, brand, expiry_date } from qc_strip_lots
         };
 
         window.onload = async function() {
+            showGlobalLoading('กำลังโหลดข้อมูลเครื่อง...', 'กรุณารอสักครู่');
+            
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('qc-date').value = today;
-            document.getElementById('entry-form-date').innerText = formatDateThai(today);
+            document.getElementById('entry-form-date').innerText = formatDateDDMMYYYY(today);
             await Promise.all([
                 loadMachines(),
-                loadConfigs()
+                loadConfigs(),
+                loadStripLots()
             ]);
             renderMachinesUI();
 
             // ========== Auto-select machine from URL parameter ==========
-            // รองรับลิงค์แยกต่อเครื่อง เช่น nurse_dtx.html?machine=DTX-01
             const urlParams = new URLSearchParams(window.location.search);
             const machineParam = urlParams.get('machine') || urlParams.get('m');
             if (machineParam) {
                 const machine = state.machines.find(m => m.serialno === machineParam);
                 if (machine) {
                     applyLockedMachineMode(machine);
-                    // เปลี่ยน title ของ browser ให้รู้ว่าเป็นลิงค์เครื่องไหน
                     document.title = `QC DTX - ${machine.serialno} (พยาบาล)`;
-                    // แจ้งเตือนผู้ใช้
                     showToast(`เปิดลิงค์สำหรับเครื่อง ${machine.serialno}${machine.name ? ' (' + machine.name + ')' : ''}`, 'success');
                 } else {
                     showToast(`ไม่พบเครื่อง "${machineParam}" ในระบบ กรุณาตรวจสอบลิงค์`, 'error');
                 }
             }
+            
+            hideGlobalLoading();
         };
 
         // ========== Locked Machine Mode ==========
-        // ล็อคเครื่องจาก URL เพื่อไม่ให้ผู้ใช้เลือกเครื่องอื่น
         function applyLockedMachineMode(machine) {
-            // 1. ซ่อน dropdown เลือกเครื่องแบบปกติ
             const selectionCard = document.getElementById('nurse-machine-selection-card');
             if (selectionCard) selectionCard.classList.add('hidden');
 
-            // 2. แสดงการ์ดล็อค
             const lockedCard = document.getElementById('nurse-machine-locked-card');
             if (lockedCard) {
                 lockedCard.classList.remove('hidden');
-                // ใส่ข้อมูลเครื่อง
                 document.getElementById('locked-machine-serial').innerText = machine.serialno;
                 document.getElementById('locked-machine-name').innerText = machine.name || '';
             }
 
-            // 3. Auto-select เครื่อง (ไม่ผ่าน dropdown)
             selectMachine(machine.serialno);
         }
 
+        // ========== LOAD CONFIGS ==========
         async function loadConfigs() {
             const { data, error } = await supabaseClient
                 .from('qc_configs')
@@ -305,6 +404,7 @@
             }
             if (data && data.length > 0) {
                 const configs = {};
+                const allQcLots = [];
                 data.forEach(row => {
                     if (!configs[row.serialno]) configs[row.serialno] = {};
                     configs[row.serialno][row.level] = {
@@ -312,15 +412,20 @@
                         target: row.target,
                         sd: row.sd
                     };
+                    // Collect all QC lots for dropdown
+                    if (row.lot) {
+                        allQcLots.push({ lot: row.lot, level: row.level, serialno: row.serialno });
+                    }
                 });
                 state.configs = configs;
+                state.allQcLots = allQcLots;
             } else {
                 useDefaultConfigs();
             }
         }
 
         function useDefaultConfigs() {
-            state.configs = {
+            const defaultConfigs = {
                 'DTX-01': {
                     low: { lot: 'LOT_L101', target: 2.50, sd: 0.15 },
                     norm: { lot: 'LOT_N201', target: 12.00, sd: 0.60 },
@@ -337,10 +442,37 @@
                     high: { lot: 'LOT_H303', target: 36.50, sd: 1.80 }
                 }
             };
+            state.configs = defaultConfigs;
+            // Build allQcLots from defaults
+            const lots = [];
+            Object.entries(defaultConfigs).forEach(([serialno, levels]) => {
+                Object.entries(levels).forEach(([level, cfg]) => {
+                    lots.push({ lot: cfg.lot, level, serialno });
+                });
+            });
+            state.allQcLots = lots;
         }
 
-        // ========== MACHINES (Dynamic from Supabase) ==========
+        // ========== LOAD STRIP LOTS ==========
+        async function loadStripLots() {
+            const { data, error } = await supabaseClient
+                .from('qc_strip_lots')
+                .select('*')
+                .order('lot_strip', { ascending: true });
+            if (error) {
+                console.error('Error loading strip lots:', error);
+                state.stripLots = [];
+                return;
+            }
+            state.stripLots = data || [];
+            console.log('✅ qc_strip_lots loaded:', state.stripLots);
+        }
 
+        function renderStripLotDropdown() {
+            renderGenericOptions('lot-strip', state.stripLots.map(s => s.lot_strip));
+        }
+
+        // ========== MACHINES ==========
         async function loadMachines() {
             const { data, error } = await supabaseClient
                 .from('qc_machines')
@@ -359,8 +491,6 @@
         function renderMachinesUI() {
             const machines = state.machines;
             if (machines.length === 0) return;
-
-            // Searchable Machine Dropdown
             renderNurseMachineOptions(machines);
         }
 
@@ -408,7 +538,7 @@
             selectMachine(serialno);
         }
 
-        // Close dropdown when clicking outside
+        // Close machine dropdown when clicking outside
         document.addEventListener('click', (e) => {
             const container = document.getElementById('nurse-machine-search-container');
             const list = document.getElementById('nurse-machine-dropdown');
@@ -421,11 +551,11 @@
         function selectMachine(machineId) {
             state.activeMachine = machineId;
 
-            // Always show the form
             document.getElementById('qc-entry-placeholder').classList.add('hidden');
             document.getElementById('qc-entry-form-wrapper').classList.remove('hidden');
 
             updateFormDetails();
+            updateDailyCount();
         }
 
         function updateFormDetails() {
@@ -434,19 +564,192 @@
             const config = state.configs[mach];
 
             document.getElementById('form-title-machine').innerHTML = `<i class="fa-solid fa-file-pen text-cyan-600 mr-1"></i> บันทึกผล QC ของ [ ${mach} ]`;
-            
+
+            // Populate QC LOT dropdowns (show all lots regardless of machine)
+            const allUniqueLots = [...new Set(state.allQcLots.map(x => x.lot))];
+            renderGenericOptions('lot-qc-low', allUniqueLots);
+            renderGenericOptions('lot-qc-norm', allUniqueLots);
+            renderGenericOptions('lot-qc-high', allUniqueLots);
+
+            // Auto-select the default config lot if available
             if (config) {
-                document.getElementById('form-lot-low-label').innerText = `Lot: ${config.low?.lot || '-'}`;
-                document.getElementById('form-lot-norm-label').innerText = `Lot: ${config.norm?.lot || '-'}`;
-                document.getElementById('form-lot-high-label').innerText = `Lot: ${config.high?.lot || '-'}`;
-            } else {
-                document.getElementById('form-lot-low-label').innerText = 'Lot: กำลังโหลด...';
-                document.getElementById('form-lot-norm-label').innerText = 'Lot: กำลังโหลด...';
-                document.getElementById('form-lot-high-label').innerText = 'Lot: กำลังโหลด...';
+                if (config.low?.lot) setGenericDropdownValue('lot-qc-low', config.low.lot);
+                if (config.norm?.lot) setGenericDropdownValue('lot-qc-norm', config.norm.lot);
+                if (config.high?.lot) setGenericDropdownValue('lot-qc-high', config.high.lot);
+            }
+
+            // Render strip lot dropdown
+            renderStripLotDropdown();
+        }
+
+        // ========== GENERIC SEARCHABLE DROPDOWN UTILITY ==========
+        function getDropdownIds(prefix) {
+            return {
+                container: document.getElementById(prefix + '-container'),
+                display: document.getElementById(prefix + '-display'),
+                arrow: document.getElementById(prefix + '-arrow'),
+                dropdown: document.getElementById(prefix + '-dropdown'),
+                search: document.getElementById(prefix + '-search'),
+                options: document.getElementById(prefix + '-options')
+            };
+        }
+
+        function toggleGenericDropdown(prefix) {
+            const ids = getDropdownIds(prefix);
+            if (!ids.dropdown) return;
+            const isHidden = ids.dropdown.classList.contains('hidden');
+            ids.dropdown.classList.toggle('hidden');
+            if (ids.arrow) ids.arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            if (isHidden) {
+                if (ids.search) {
+                    ids.search.value = '';
+                    ids.search.focus();
+                }
+                // Re-render options based on the stored data
+                if (prefix === 'lot-strip') {
+                    renderStripLotDropdown();
+                } else if (prefix.startsWith('lot-qc-')) {
+                    const allUniqueLots = [...new Set(state.allQcLots.map(x => x.lot))];
+                    renderGenericOptions(prefix, allUniqueLots);
+                }
             }
         }
 
-        // QC Evaluation
+        function filterGenericDropdown(prefix) {
+            const ids = getDropdownIds(prefix);
+            if (!ids.search || !ids.options) return;
+            const query = ids.search.value.toLowerCase();
+
+            let items = [];
+            if (prefix === 'lot-strip') {
+                items = state.stripLots.map(s => s.lot_strip);
+            } else if (prefix.startsWith('lot-qc-')) {
+                items = [...new Set(state.allQcLots.map(x => x.lot))];
+            }
+            const filtered = items.filter(item => item.toLowerCase().includes(query));
+            renderGenericOptions(prefix, filtered);
+        }
+
+        function renderGenericOptions(prefix, items) {
+            const ids = getDropdownIds(prefix);
+            if (!ids.options) return;
+            ids.options.innerHTML = '';
+            if (!items || items.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'px-3 py-2 text-[10px] text-slate-400 text-center';
+                empty.innerText = 'ไม่พบข้อมูล';
+                ids.options.appendChild(empty);
+                return;
+            }
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'px-3 py-1.5 text-xs cursor-pointer hover:bg-cyan-50 flex items-center space-x-2';
+                div.innerHTML = `<span>${item}</span>`;
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    selectGenericOption(prefix, item);
+                };
+                ids.options.appendChild(div);
+            });
+        }
+
+        function selectGenericOption(prefix, value) {
+            const ids = getDropdownIds(prefix);
+            if (!ids.display) return;
+            ids.display.innerText = value;
+            ids.display.className = 'text-slate-700 font-semibold';
+            if (ids.dropdown) ids.dropdown.classList.add('hidden');
+            if (ids.arrow) ids.arrow.style.transform = 'rotate(0deg)';
+        }
+
+        function setGenericDropdownValue(prefix, value) {
+            const ids = getDropdownIds(prefix);
+            if (!ids.display) return;
+            ids.display.innerText = value;
+            ids.display.className = 'text-slate-700 font-semibold';
+        }
+
+        function getGenericDropdownValue(prefix) {
+            const ids = getDropdownIds(prefix);
+            if (!ids.display) return '';
+            const val = ids.display.innerText;
+            // Return empty if it's the placeholder
+            if (val.startsWith('--')) return '';
+            return val;
+        }
+
+        // Close all generic dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            ['lot-qc-low', 'lot-qc-norm', 'lot-qc-high', 'lot-strip'].forEach(prefix => {
+                const container = document.getElementById(prefix + '-container');
+                const dropdown = document.getElementById(prefix + '-dropdown');
+                const arrow = document.getElementById(prefix + '-arrow');
+                if (container && dropdown && !container.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    if (arrow) arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // ========== ADD NEW STRIP LOT ==========
+        function addNewStripLot() {
+            document.getElementById('new-strip-lot').value = '';
+            document.getElementById('new-strip-brand').value = '';
+            document.getElementById('new-strip-expiry').value = '';
+            document.getElementById('add-strip-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('new-strip-lot').focus(), 100);
+        }
+
+        function closeAddStripModal() {
+            document.getElementById('add-strip-modal').classList.add('hidden');
+        }
+
+        async function confirmAddStripLot() {
+            const lotStrip = document.getElementById('new-strip-lot').value.trim();
+            if (!lotStrip) {
+                showToast('กรุณากรอกเลข LOT Strip', 'error');
+                return;
+            }
+
+            // Check if already exists
+            const exists = state.stripLots.some(s => s.lot_strip === lotStrip);
+            if (exists) {
+                showToast('LOT Strip นี้มีอยู่ในระบบแล้ว', 'error');
+                closeAddStripModal();
+                // Still select it
+                selectGenericOption('lot-strip', lotStrip);
+                return;
+            }
+
+            const brand = document.getElementById('new-strip-brand').value.trim() || null;
+            const expiry = document.getElementById('new-strip-expiry').value || null;
+
+            // Show loading
+            showGlobalLoading('กำลังเพิ่ม LOT Strip...', 'กรุณารอสักครู่');
+
+            const { data, error } = await supabaseClient
+                .from('qc_strip_lots')
+                .insert({ lot_strip: lotStrip, brand, expiry_date: expiry })
+                .select();
+
+            // Hide loading
+            hideGlobalLoading();
+
+            if (error) {
+                console.error('Error adding strip lot:', error);
+                showToast('เกิดข้อผิดพลาดในการเพิ่ม LOT Strip', 'error');
+                return;
+            }
+
+            // Reload strip lots
+            await loadStripLots();
+            renderStripLotDropdown();
+            selectGenericOption('lot-strip', lotStrip);
+            closeAddStripModal();
+            showToast(`เพิ่ม LOT Strip "${lotStrip}" เรียบร้อยแล้ว`, 'success');
+        }
+
+        // ========== QC EVALUATION ==========
         function evaluateDataValue(machineId, level, value) {
             const config = state.configs[machineId] && state.configs[machineId][level];
             if (!config) return { sdScore: 'N/A', msg: 'ไม่พบข้อมูลเกณฑ์', text: 'text-slate-700', bg: 'bg-slate-50', level: 'Unknown' };
@@ -454,27 +757,49 @@
             const diff = Math.abs(value - config.target);
             const sdScore = (diff / config.sd).toFixed(2);
 
-            if (sdScore <= 1) {
-                return { sdScore, msg: 'ปกติ (Within ±1SD)', text: 'text-emerald-700', bg: 'bg-emerald-50', level: 'Pass' };
-            } else if (sdScore <= 2) {
-                return { sdScore, msg: 'แจ้งเตือน (Warning ±2SD)', text: 'text-yellow-700', bg: 'bg-yellow-50', level: 'Warning' };
-            } else if (sdScore <= 3) {
-                return { sdScore, msg: 'เตือนปฏิบัติการ (Action ±3SD)', text: 'text-orange-700', bg: 'bg-orange-50', level: 'Action' };
+            if (sdScore <= 2) {
+                return { sdScore, msg: 'ผ่าน (Pass ±2SD)', text: 'text-emerald-700', bg: 'bg-emerald-50', level: 'Pass' };
             } else {
-                return { sdScore, msg: 'ปฏิเสธผลทดสอบ (Reject >3SD)', text: 'text-rose-700', bg: 'bg-rose-50', level: 'Reject' };
+                return { sdScore, msg: 'ไม่ผ่าน (Not Pass >±2SD)', text: 'text-rose-700', bg: 'bg-rose-50', level: 'Not Pass' };
             }
         }
 
-        // Save QC Result
+        // ========== SAVE QC RESULT ==========
         async function saveQCResult(e) {
             e.preventDefault();
             if (!state.activeMachine) return;
+
+            // Validate LOT fields
+            const lotQcLow = getGenericDropdownValue('lot-qc-low');
+            const lotQcNorm = getGenericDropdownValue('lot-qc-norm');
+            const lotQcHigh = getGenericDropdownValue('lot-qc-high');
+            const lotStrip = getGenericDropdownValue('lot-strip');
+
+            if (!lotQcLow) {
+                showToast('กรุณาเลือก LOT. QC (Level 1 - Low)', 'error');
+                return;
+            }
+            if (!lotQcNorm) {
+                showToast('กรุณาเลือก LOT. QC (Level 2 - Normal)', 'error');
+                return;
+            }
+            if (!lotQcHigh) {
+                showToast('กรุณาเลือก LOT. QC (Level 3 - High)', 'error');
+                return;
+            }
+            if (!lotStrip) {
+                showToast('กรุณาเลือก LOT. Strip', 'error');
+                return;
+            }
 
             const date = document.getElementById('qc-date').value;
             const operator = document.getElementById('qc-operator').value;
             const lowVal = parseFloat(document.getElementById('qc-input-low').value);
             const normVal = parseFloat(document.getElementById('qc-input-norm').value);
             const highVal = parseFloat(document.getElementById('qc-input-high').value);
+
+            // Show loading
+            showGlobalLoading('กำลังบันทึกผล QC...', 'กรุณารอสักครู่');
 
             // Insert to Supabase
             const { error } = await supabaseClient
@@ -485,8 +810,15 @@
                     operator,
                     l: lowVal,
                     n: normVal,
-                    h: highVal
+                    h: highVal,
+                    lot_qc_low: lotQcLow,
+                    lot_qc_norm: lotQcNorm,
+                    lot_qc_high: lotQcHigh,
+                    lot_strip: lotStrip
                 });
+
+            // Hide loading
+            hideGlobalLoading();
 
             if (error) {
                 console.error('Error saving log:', error);
@@ -513,9 +845,25 @@
             setupModalRow('modal-row-norm', 'modal-status-norm', verdictNorm);
             setupModalRow('modal-row-high', 'modal-status-high', verdictHigh);
 
+            // Determine overall pass/not pass
+            const allPass = [verdictLow, verdictNorm, verdictHigh].every(v => v.level === 'Pass');
+            const conclusionDiv = document.getElementById('modal-conclusion');
+            const conclusionIcon = document.getElementById('modal-conclusion-icon');
+            const conclusionText = document.getElementById('modal-conclusion-text');
+            
+            if (allPass) {
+                conclusionDiv.className = 'p-2.5 border rounded-xl flex items-start space-x-2 text-[11px] bg-emerald-50 border-emerald-200 text-emerald-800';
+                conclusionIcon.className = 'fa-solid fa-circle-check mt-0.5 text-emerald-600';
+                conclusionText.innerText = 'เครื่องปกติ สามารถใช้งานได้';
+            } else {
+                conclusionDiv.className = 'p-2.5 border rounded-xl flex items-start space-x-2 text-[11px] bg-rose-50 border-rose-200 text-rose-800';
+                conclusionIcon.className = 'fa-solid fa-circle-exclamation mt-0.5 text-rose-600';
+                conclusionText.innerText = 'ไม่ผ่าน ไม่สามารถใช้งานเครื่องนี้ได้ แก้ไขดังนี้ 1.เช็คยี่ห้อ/รุ่น/วันหมดอายุ strip หรือ QC ให้ถูกต้อง 2.ลองทำซ้ำ (หากไม่ผ่านห้ามใช้เครื่องนี้ และนำเครื่องมาติดต่อที่ห้องปฏิบัติการกลาง Central lab)';
+            }
+
             document.getElementById('nurse-result-modal').classList.remove('hidden');
 
-            // Clear form
+            // Clear form values (keep LOT selections as they might be reused)
             document.getElementById('qc-input-low').value = '';
             document.getElementById('qc-input-norm').value = '';
             document.getElementById('qc-input-high').value = '';
@@ -523,10 +871,11 @@
 
         function closeNurseResultModal() {
             document.getElementById('nurse-result-modal').classList.add('hidden');
-            showToast('ส่งข้อมูลและอัปเดตสถิติเพื่อประสานงานกับส่วนกลางห้องแล็บสำเร็จ', 'success');
+            updateDailyCount();
+            showToast('บันทึกข้อมูลเสร็จสิ้น กรุณาตรวจสอบสถานะเครื่องอีกครั้งก่อนใช้งาน', 'success');
         }
 
-        // Custom Confirm
+        // ========== CUSTOM CONFIRM ==========
         function showCustomConfirm(title, message, onConfirm) {
             document.getElementById('confirm-title').innerText = title;
             document.getElementById('confirm-message').innerText = message;
@@ -553,12 +902,74 @@
             });
         }
 
-        // Formatting
+        // ========== FORMATTING (dd/mm/yyyy) ==========
+        function formatDateDDMMYYYY(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-');
+            if (parts.length !== 3) return dateString;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
         function formatDateThai(dateString) {
             return new Date(dateString).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
         }
 
-        // Toast
+        // ========== DAILY COUNT ==========
+        async function fetchDailyCount(serialno, date) {
+            if (!serialno || !date) return 0;
+            const { count, error } = await supabaseClient
+                .from('qc_logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('serialno', serialno)
+                .eq('date', date);
+            if (error) {
+                console.error('Error counting daily records:', error);
+                return 0;
+            }
+            return count || 0;
+        }
+
+        async function updateDailyCount() {
+            if (!state.activeMachine) return;
+            const date = document.getElementById('qc-date').value;
+            if (!date) return;
+            const count = await fetchDailyCount(state.activeMachine, date);
+            const display = document.getElementById('daily-count-display');
+            if (count > 0) {
+                display.innerText = `ครั้งที่ ${count} ของวัน`;
+                display.className = 'block text-[10px] text-cyan-700 font-bold mt-1';
+            } else {
+                display.innerText = 'ยังไม่มีบันทึกในวันนี้';
+                display.className = 'block text-[10px] text-slate-400 font-bold mt-1';
+            }
+        }
+
+        function onDateChange() {
+            const dateInput = document.getElementById('qc-date');
+            const dateVal = dateInput.value;
+            // Update the formatted date display
+            document.getElementById('entry-form-date').innerText = formatDateDDMMYYYY(dateVal);
+            // Refresh daily count
+            updateDailyCount();
+        }
+
+        // ========== GLOBAL LOADING OVERLAY ==========
+        function showGlobalLoading(text = 'กำลังโหลดข้อมูล...', subtext = 'กรุณารอสักครู่') {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (!overlay) return;
+            const textEl = document.getElementById('global-loading-text');
+            const subtextEl = document.getElementById('global-loading-subtext');
+            if (textEl) textEl.innerText = text;
+            if (subtextEl) subtextEl.innerText = subtext;
+            overlay.classList.remove('hidden');
+        }
+
+        function hideGlobalLoading() {
+            const overlay = document.getElementById('global-loading-overlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        // ========== TOAST ==========
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
